@@ -1,0 +1,160 @@
+// ============================================================================
+// ResearchBuddy - Enterprise Relational Schema (Prisma 5+)
+// File: server/prisma/schema.prisma
+// Specification: DATA-SPEC-002
+// ============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+// ----------------------------------------------------------------------------
+// ENUMS
+// ----------------------------------------------------------------------------
+
+enum DocumentSource {
+  ARXIV
+  SEMANTIC_SCHOLAR
+  PUBMED
+  WIKIPEDIA
+  MANUAL_UPLOAD
+
+  @@map("document_source")
+}
+
+enum IngestionStatus {
+  PENDING
+  PROCESSING
+  INDEXED
+  FAILED
+
+  @@map("ingestion_status")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+
+  @@map("message_role")
+}
+
+// ----------------------------------------------------------------------------
+// MODELS
+// ----------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String   @db.VarChar(150)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  refreshTokens RefreshToken[]
+  repositories  Repository[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash String   @unique @map("token_hash") @db.VarChar(64)
+  userId    String   @map("user_id") @db.Uuid
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model Repository {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(120)
+  description String?  @db.Text
+  colorTag    String   @default("#3B82F6") @map("color_tag") @db.VarChar(16)
+  userId      String   @map("user_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents     Document[]
+  conversations Conversation[]
+
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("repositories")
+}
+
+model Document {
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  repositoryId       String          @map("repository_id") @db.Uuid
+  title              String          @db.VarChar(500)
+  authors            String[]        @default([])
+  abstract           String?         @db.Text
+  source             DocumentSource
+  externalId         String?         @map("external_id") @db.VarChar(100)
+  cloudinaryUrl      String?         @map("cloudinary_url") @db.Text
+  cloudinaryPublicId String?         @map("cloudinary_public_id") @db.VarChar(255)
+  fileSizeBytesRaw   Int?            @map("file_size_bytes_raw")
+  fileSizeBytesComp  Int?            @map("file_size_bytes_comp")
+  pageCount          Int?            @map("page_count")
+  status             IngestionStatus @default(PENDING)
+  errorMessage       String?         @map("error_message") @db.Text
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId])
+  @@index([repositoryId, status])
+  @@index([externalId])
+  @@map("documents")
+}
+
+model Conversation {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  repositoryId String   @map("repository_id") @db.Uuid
+  title        String   @default("New Discussion") @db.VarChar(200)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  repository Repository    @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+
+  @@index([repositoryId])
+  @@index([repositoryId, updatedAt(sort: Desc)])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String      @map("conversation_id") @db.Uuid
+  role           MessageRole
+  content        String      @db.Text
+  citations      Json?       @db.JsonB
+  tokenCount     Int?        @map("token_count")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt(sort: Asc)])
+  @@map("chat_messages")
+}

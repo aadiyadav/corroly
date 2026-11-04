@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
+
+[tool.pyright]
+venvPath = "."
+venv = "venv"
+extraPaths = ["./venv/Lib/site-packages", "."]
+
+[tool.pyrefly]
+python-interpreter-path = "venv/Scripts/python.exe"
+site-package-path = ["venv/Lib/site-packages"]
+search-path = [".", "app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+

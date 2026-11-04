@@ -1,0 +1,157 @@
+/* ==========================================================================
+   Corroly - Master Global Stylesheet
+   File: src/app/index.css
+   Specification: UI-SPEC-005
+   Typography: Geist Only (Google Fonts)
+   Colors: Black (#000000), White (#ffffff), Crimson (#7f1e23),
+           Peach (#ffd4a5), Muted Gray (#737373)
+   Breakpoints: Strict 3-Tier Grid (> md, md to sm, < sm)
+   ========================================================================== */
+
+/* 1. GOOGLE FONTS & SMOOTH SCROLL IMPORTS */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+@import 'lenis/dist/lenis.css';
+
+/* 2. TAILWIND DIRECTIVES */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 3. BASE NORMALIZATION & BODY FONT ASSIGNMENT */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle textured dot grid pattern matching screenshot on zinc-50 */
+.textured-dot-bg {
+  background-color: #fafafa; /* zinc-50 */
+  background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1.25px, transparent 1.25px);
+  background-size: 22px 22px;
+}
+
+/* 4. KEYFRAME ANIMATIONS */
+@keyframes citationPulse {
+  0% { background-color: rgba(255, 212, 165, 0.9); }
+  50% { background-color: rgba(255, 212, 165, 0.3); }
+  100% { background-color: rgba(255, 212, 165, 0.9); }
+}
+
+@keyframes typewriterPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1.0; transform: scale(1.2); }
+}
+
+.citation-focus-pulse {
+  animation: citationPulse 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.typewriter-dot {
+  animation: typewriterPulse 1.0s infinite ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   5. STRICT 3-TIER RESPONSIVE BREAKPOINT GRID
+   ========================================================================== */
+
+/* Base container: Guarantees permanent top clearance below the fixed floating header */
+.app-viewport-container {
+  width: 100%;
+  margin: 0 auto;
+  padding-top: 5.75rem; /* 92px: 16px (top-4) + ~56px (header) + 20px (breathing room) */
+  padding-bottom: 1.0rem;
+}
+
+/* --------------------------------------------------------------------------
+   TIER 1: DESKTOP (> md / min-width: 769px)
+   -------------------------------------------------------------------------- */
+@media (min-width: 769px) {
+  .app-viewport-container {
+    max-width: 1440px;
+    padding-top: 5.75rem;
+    padding-bottom: 1.0rem;
+    padding-left: 2.0rem;
+    padding-right: 2.0rem;
+  }
+
+  .split-workspace-grid {
+    display: grid;
+    grid-template-columns: 58% 42%;
+    gap: 1.5rem;
+    height: calc(100vh - 9.75rem);
+    overflow: hidden;
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   TIER 2: TABLET (sm to md / min-width: 640px and max-width: 768px)
+   -------------------------------------------------------------------------- */
+@media (min-width: 640px) and (max-width: 768px) {
+  .app-viewport-container {
+    width: 100%;
+    padding-top: 5.5rem;
+    padding-bottom: 1.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .split-workspace-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.0rem;
+    height: auto;
+    min-height: calc(100vh - 9.0rem);
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   TIER 3: MOBILE (< sm / max-width: 639px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .app-viewport-container {
+    width: 100%;
+    padding-top: 5.25rem;
+    padding-bottom: 4.5rem; /* Room for bottom navigation */
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .split-workspace-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: auto;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+}
