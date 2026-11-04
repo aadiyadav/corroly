@@ -261,7 +261,7 @@ export const ChatConsole: React.FC = () => {
     try {
       const token = await getValidAccessToken();
       const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+        process.env.NEXT_API_URL || "http://localhost:5000/api/v1";
 
       // Calculate targeted documents for this discussion
       const availableDocs = documents.filter((d) => d.status === "INDEXED");
@@ -320,14 +320,14 @@ export const ChatConsole: React.FC = () => {
               if (parsed.token) {
                 dispatch(appendStreamToken(parsed.token));
               }
-            } catch {}
+            } catch { }
           } else if (eventType === "citations" && dataStr) {
             try {
               const parsed = JSON.parse(dataStr);
               if (parsed.citations) {
                 dispatch(setStreamCitations(parsed.citations));
               }
-            } catch {}
+            } catch { }
           }
         }
       }
@@ -452,9 +452,8 @@ export const ChatConsole: React.FC = () => {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex flex-col gap-1.5 ${
-                  msg.role === "USER" ? "items-end" : "items-start"
-                }`}
+                className={`flex flex-col gap-1.5 ${msg.role === "USER" ? "items-end" : "items-start"
+                  }`}
               >
                 <div className="flex items-center gap-1.5 px-1">
                   {msg.role === "USER" ? (
@@ -470,11 +469,10 @@ export const ChatConsole: React.FC = () => {
 
                 {/* Message Bubble */}
                 <div
-                  className={`px-3 py-2 rounded-2xl max-w-[85%] text-xs leading-relaxed whitespace-pre-wrap ${
-                    msg.role === "USER"
+                  className={`px-3 py-2 rounded-2xl max-w-[85%] text-xs leading-relaxed whitespace-pre-wrap ${msg.role === "USER"
                       ? "bg-[#7f1e23] text-white rounded-br-md shadow-sm"
                       : "bg-muted/15 text-black rounded-bl-md shadow-sm"
-                  }`}
+                    }`}
                 >
                   {msg.role === "ASSISTANT" ? cleanAssistantContent(msg.content) : msg.content}
                 </div>

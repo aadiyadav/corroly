@@ -62,7 +62,7 @@ export const PdfReader: React.FC = () => {
 
       try {
         const token = await getValidAccessToken();
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+        const apiUrl = process.env.NEXT_API_URL || "http://localhost:5000/api/v1";
         const tokenParam = token ? `?token=${encodeURIComponent(token)}` : "";
         const url = `${apiUrl}/repos/${readerDoc.repositoryId}/documents/${readerDoc.id}/file${tokenParam}`;
 

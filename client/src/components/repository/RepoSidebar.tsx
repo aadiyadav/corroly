@@ -127,9 +127,8 @@ export const RepoSidebar: React.FC = () => {
 
     uncompletedJobs.forEach((job) => {
       const tokenParam = accessToken ? `&token=${encodeURIComponent(accessToken)}` : "";
-      const sseUrl = `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
-      }/repos/${activeRepositoryId}/documents/${job.docId}/progress?jobId=${job.jobId}${tokenParam}`;
+      const sseUrl = `${process.env.NEXT_API_URL || "http://localhost:5000/api/v1"
+        }/repos/${activeRepositoryId}/documents/${job.docId}/progress?jobId=${job.jobId}${tokenParam}`;
 
       const es = new EventSource(sseUrl, { withCredentials: true });
 
@@ -313,22 +312,20 @@ export const RepoSidebar: React.FC = () => {
                     dispatch(openReader({ doc, page: 1 }));
                   }
                 }}
-                className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${
-                  isSelected
+                className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${isSelected
                     ? "bg-[#ffd4a5]/50 shadow-sm text-black border-[#ffd4a5]"
                     : isDocSelected
-                    ? "bg-[#fffaf5]/50 hover:bg-[#fff5eb] text-black border-[#ffd4a5]/60 shadow-sm"
-                    : "bg-white hover:bg-zinc-50 text-black border-black/10 shadow-sm"
-                }`}
+                      ? "bg-[#fffaf5]/50 hover:bg-[#fff5eb] text-black border-[#ffd4a5]/60 shadow-sm"
+                      : "bg-white hover:bg-zinc-50 text-black border-black/10 shadow-sm"
+                  }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <FileText
-                      className={`w-4 h-4 shrink-0 ${
-                        isSelected || isDocSelected
+                      className={`w-4 h-4 shrink-0 ${isSelected || isDocSelected
                           ? "text-[#7f1e23]"
                           : "text-[#737373]"
-                      }`}
+                        }`}
                     />
                     <span className="text-xs font-semibold line-clamp-1">
                       {doc.title}
@@ -388,11 +385,10 @@ export const RepoSidebar: React.FC = () => {
                       <button
                         type="button"
                         onClick={(e) => handleToggleSelect(doc.id, e)}
-                        className={`group flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all active:scale-95 shadow-sm ${
-                          isDocSelected
+                        className={`group flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all active:scale-95 shadow-sm ${isDocSelected
                             ? "bg-[#7f1e23] text-white hover:bg-[#63161a]"
                             : "bg-white text-[#737373] hover:text-[#7f1e23] hover:border-[#7f1e23]/30 border border-[#e2e2e2]"
-                        }`}
+                          }`}
                         title={isDocSelected ? "Click to deselect from discussion" : "Click to select for discussion"}
                       >
                         {isDocSelected ? (

@@ -425,7 +425,7 @@ NCBI_PUBMED_API_KEY=""
 # =============================================================================
 # FRONTEND CLIENT ENVIRONMENT BLUEPRINT (client/)
 # =============================================================================
-NEXT_PUBLIC_API_URL="http://localhost:5000/api/v1"
+NEXT_API_URL="http://localhost:5000/api/v1"
 ```
 
 ---

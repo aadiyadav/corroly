@@ -69,9 +69,8 @@ export const PaperSelectorBar: React.FC = () => {
       const tokenParam = token ? `&token=${encodeURIComponent(token)}` : "";
 
       uncompletedJobs.forEach((job) => {
-        const sseUrl = `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
-        }/repos/${activeRepositoryId}/documents/${job.docId}/progress?jobId=${job.jobId}${tokenParam}`;
+        const sseUrl = `${process.env.NEXT_API_URL || "http://localhost:5000/api/v1"
+          }/repos/${activeRepositoryId}/documents/${job.docId}/progress?jobId=${job.jobId}${tokenParam}`;
 
         const es = new EventSource(sseUrl, { withCredentials: true });
 
@@ -279,18 +278,16 @@ export const PaperSelectorBar: React.FC = () => {
               type="button"
               onClick={() => handleToggle(doc.id)}
               title={doc.title}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition-all max-w-[220px] ${
-                isSelected
+              className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs transition-all max-w-[220px] ${isSelected
                   ? "bg-white text-black shadow-sm ring-1 ring-[#7f1e23]/30 font-medium"
                   : "bg-[#f0f0f0] text-[#737373] opacity-75 hover:opacity-100"
-              }`}
+                }`}
             >
               <div
-                className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
-                  isSelected
+                className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${isSelected
                     ? "bg-[#7f1e23] text-white"
                     : "border border-[#cccccc]"
-                }`}
+                  }`}
               >
                 {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
               </div>
