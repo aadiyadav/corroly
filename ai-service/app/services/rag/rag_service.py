@@ -28,8 +28,9 @@ MANDATORY BEHAVIORAL RULES:
 2. Grounding & Anti-Hallucination Mandate:
    - Every factual claim, statistic, formula, algorithm step, reference count, and quote MUST be derived from and verifiable against the provided source excerpts.
    - Never invent or fabricate non-existent citations, formulas, experimental findings, or sections.
-   - If no research paper excerpts are provided in the context sources (or if all papers have been deselected), do NOT attempt to answer questions about any research paper from memory or assumptions. Instead, state clearly:
-     "No research papers are currently selected in this workspace. Please select at least one paper from the sidebar to analyze it."
+   - If no research paper excerpts are provided in the context sources (or if all papers have been deselected), do NOT attempt to answer questions about any research paper from memory or assumptions:
+     - If no paper is selected, state clearly: "No research papers are currently selected in this workspace. Please select at least one paper from the sidebar to analyze it."
+     - If the user has selected a paper but no text excerpts were found in the index, inform the user clearly: "The selected research paper is listed in your workspace, but its text excerpts are not found in this environment's vector store. Please re-upload the paper in this workspace to index its contents for analysis."
    - If a specific piece of structural information (such as the total number of references or a specific formula) is not fully contained in the provided excerpts, state clearly what is observable from the available excerpts and specify what portions of the document are not covered.
 3. Clean Presentation (No In-Text Citation Tags):
    - Do NOT include bracketed citation tags, document labels, or page markers (such as '[Doc: ...]', '[Page: ...]', or '[SOURCE X]') anywhere in your response text. Present clean, natural, scholarly text without bracketed document tags.
@@ -110,11 +111,13 @@ class GroundedRagService:
         combined_chunks.sort(key=lambda x: x.get("similarity") or 0.0, reverse=True)
         return combined_chunks[:top_k]
 
-    def format_context_block(self, chunks: List[Dict[str, Any]]) -> str:
+    def format_context_block(self, chunks: List[Dict[str, Any]], has_selected_docs: bool = False) -> str:
         """
         Formats retrieved vector chunks into indexed source blocks for the prompt.
         """
         if not chunks:
+            if has_selected_docs:
+                return "The user selected a research paper, but 0 matching text excerpts were found in the vector index. Please inform the user that the selected paper's vector chunks are missing from this environment's vector store and must be re-uploaded in this workspace."
             return "No research papers are currently selected in this workspace. No context is available."
 
         formatted_parts = []
@@ -272,7 +275,7 @@ class GroundedRagService:
             top_k=top_k,
             document_ids=document_ids
         )
-        context_str = self.format_context_block(chunks)
+        context_str = self.format_context_block(chunks, has_selected_docs=bool(document_ids))
 
         # 2. Build conversation history messages
         messages: List[BaseMessage] = [
@@ -299,10 +302,8 @@ class GroundedRagService:
 
         raw_candidates = [
             settings.GEMINI_MODEL,
-            "gemini-3-flash-preview",
-            "gemini-3.8-flash",
-            "gemini-3.7-flash",
-            "gemini-3.1-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.5-flash-lite",
             "gemini-flash-latest"
         ]
         models_to_try = []
@@ -342,7 +343,10 @@ class GroundedRagService:
                     f"the key findings indicate: {top_chunk.get('text', '')[:220]}..."
                 )
             else:
-                sim_text = "I am Corroly, an academic research assistant dedicated exclusively to analyzing and synthesizing the research papers in your workspace. No research papers are currently selected in this workspace. Please select at least one paper from the sidebar to analyze it."
+                if document_ids:
+                    sim_text = "The selected research paper is listed in your workspace, but its text excerpts are not yet indexed in this environment's vector store. If this paper was uploaded prior to deployment, please re-upload it in this workspace to index its contents for analysis."
+                else:
+                    sim_text = "I am Corroly, an academic research assistant dedicated exclusively to analyzing and synthesizing the research papers in your workspace. No research papers are currently selected in this workspace. Please select at least one paper from the sidebar to analyze it."
 
             words = sim_text.split(" ")
             for w in words:

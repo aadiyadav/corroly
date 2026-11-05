@@ -12,12 +12,12 @@ class Settings(BaseSettings):
 
     # ChromaDB Vector Store
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_data"
-    CHROMA_COLLECTION_NAME: str = "research_paper_embeddings"
+    CHROMA_COLLECTION_NAME: str = "research_paper_embeddings_v2"
 
     # Google Gemini & LLM Settings
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-3-flash-preview"
-    GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-2"
 
     # Cloudinary Object Storage
     CLOUDINARY_CLOUD_NAME: Optional[str] = None
