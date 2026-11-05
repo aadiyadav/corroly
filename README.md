@@ -1,4 +1,4 @@
-# Corroly (ResearchBuddy)
+# Corroly (Research Synthesis Platform)
 
 > **Enterprise-grade Academic Literature Discovery, Lossless PDF Study & Grounded Research Synthesis Platform**
 
