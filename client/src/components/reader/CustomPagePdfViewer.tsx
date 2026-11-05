@@ -8,9 +8,9 @@ import { Loader2, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Configure local PDF.js worker (v4.8.69) with absolute origin URL
+// Configure PDF.js worker (v4.8.69) with reliable unpkg CDN matching installed pdfjs.version
 if (typeof window !== "undefined") {
-  pdfjs.GlobalWorkerOptions.workerSrc = `${window.location.origin}/pdf.worker.min.mjs`;
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 }
 
 interface CustomPagePdfViewerProps {
