@@ -87,8 +87,8 @@ function LoginForm() {
           email: email.trim(),
           password,
         });
-        const { user, accessToken } = response.data.data;
-        dispatch(setCredentials({ user, accessToken }));
+        const { user, accessToken, refreshToken } = response.data.data;
+        dispatch(setCredentials({ user, accessToken, refreshToken }));
         dispatch(setActiveWorkspaceView("repositories"));
         router.push("/repositories");
       } else {
@@ -97,8 +97,8 @@ function LoginForm() {
           email: email.trim(),
           password,
         });
-        const { user, accessToken } = response.data.data;
-        dispatch(setCredentials({ user, accessToken }));
+        const { user, accessToken, refreshToken } = response.data.data;
+        dispatch(setCredentials({ user, accessToken, refreshToken }));
         dispatch(setActiveWorkspaceView("repositories"));
         router.push("/repositories");
       }

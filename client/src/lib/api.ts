@@ -77,14 +77,26 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Post to refresh endpoint with HTTP-only cookie automatically attached
+        const storedToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("corroly_refresh_token")
+            : null;
+
+        // Post to refresh endpoint with HTTP-only cookie + fallback body token
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
-          {},
+          { refreshToken: storedToken || undefined },
           { withCredentials: true }
         );
 
         const newAccessToken = refreshResponse.data?.data?.accessToken;
+        const newRefreshToken = refreshResponse.data?.data?.refreshToken;
+
+        if (newRefreshToken && typeof window !== "undefined") {
+          try {
+            localStorage.setItem("corroly_refresh_token", newRefreshToken);
+          } catch {}
+        }
 
         if (newAccessToken) {
           store.dispatch(setAccessToken(newAccessToken));
@@ -148,12 +160,23 @@ export async function getValidAccessToken(): Promise<string | null> {
 
   if (!token) {
     try {
+      const storedToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("corroly_refresh_token")
+          : null;
+
       const res = await axios.post(
         `${API_BASE_URL}/auth/refresh`,
-        {},
+        { refreshToken: storedToken || undefined },
         { withCredentials: true }
       );
       token = res.data?.data?.accessToken || null;
+      const newRefreshToken = res.data?.data?.refreshToken;
+      if (newRefreshToken && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("corroly_refresh_token", newRefreshToken);
+        } catch {}
+      }
       if (token) {
         store.dispatch(setAccessToken(token));
       }

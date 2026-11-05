@@ -49,15 +49,15 @@ export const AuthModal: React.FC = () => {
     try {
       if (mode === "login") {
         const response = await api.post("/auth/login", { email: email.trim(), password });
-        const { user, accessToken } = response.data.data;
-        dispatch(setCredentials({ user, accessToken }));
+        const { user, accessToken, refreshToken } = response.data.data;
+        dispatch(setCredentials({ user, accessToken, refreshToken }));
         dispatch(setActiveWorkspaceView("repositories"));
         dispatch(closeAuthModal());
         router.push("/repositories");
       } else {
         const response = await api.post("/auth/register", { name: name.trim(), email: email.trim(), password });
-        const { user, accessToken } = response.data.data;
-        dispatch(setCredentials({ user, accessToken }));
+        const { user, accessToken, refreshToken } = response.data.data;
+        dispatch(setCredentials({ user, accessToken, refreshToken }));
         dispatch(setActiveWorkspaceView("repositories"));
         dispatch(closeAuthModal());
         router.push("/repositories");

@@ -28,13 +28,18 @@ export const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; accessToken: string }>
+      action: PayloadAction<{ user: User; accessToken: string; refreshToken?: string }>
     ) => {
       state.user = action.payload.user;
       state.accessToken = action.payload.accessToken;
       state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
+      if (action.payload.refreshToken && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("corroly_refresh_token", action.payload.refreshToken);
+        } catch {}
+      }
     },
     setAccessToken: (state, action: PayloadAction<string>) => {
       state.accessToken = action.payload;
@@ -53,6 +58,11 @@ export const authSlice = createSlice({
       state.isAuthenticated = false;
       state.isLoading = false;
       state.isInitialized = true;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("corroly_refresh_token");
+        } catch {}
+      }
     },
   },
 });

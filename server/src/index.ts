@@ -7,12 +7,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
-  process.env.CLIENT_ORIGIN || "http://localhost:3000",
+  process.env.CLIENT_ORIGIN?.replace(/\/$/, ""),
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-];
+].filter(Boolean) as string[];
 
 // Security & Request Parsing Middleware
 app.use(
@@ -35,7 +36,11 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         callback(null, true);
       } else {
         callback(null, false);

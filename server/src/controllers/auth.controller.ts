@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service.js";
 import { config } from "../config/index.js";
 
+const isProduction = config.nodeEnv === "production" || process.env.NODE_ENV === "production";
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: config.nodeEnv === "production",
-  sameSite: "lax" as const,
+  secure: isProduction,
+  sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
   path: "/",
   maxAge: config.jwt.refreshMaxAgeMs,
 };
@@ -20,6 +22,7 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
         },
         meta: { timestamp: new Date().toISOString() },
       });
@@ -37,6 +40,7 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
         },
         meta: { timestamp: new Date().toISOString() },
       });
@@ -55,6 +59,7 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
         },
         meta: { timestamp: new Date().toISOString() },
       });

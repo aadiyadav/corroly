@@ -65,10 +65,13 @@ class IngestionPipelineManager:
 
             pdf_bytes = raw_pdf_bytes
             if not pdf_bytes and download_url:
-                async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
                     resp = await client.get(
                         download_url,
-                        headers={"User-Agent": "Corroly/1.0 (academic-downloader)"}
+                        headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                            "Accept": "application/pdf,application/octet-stream,*/*",
+                        }
                     )
                     resp.raise_for_status()
                     pdf_bytes = resp.content
@@ -157,6 +160,9 @@ class IngestionPipelineManager:
 
 
         except Exception as e:
+            import traceback
+            print(f"[Ingestion Error] Pipeline failed for doc {document_id}: {e}")
+            traceback.print_exc()
             job.status = "FAILED"
             job.error = str(e)
             await job.queue.put({

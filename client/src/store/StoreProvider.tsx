@@ -10,13 +10,25 @@ let inflightRestore: Promise<{ user: any; accessToken: string } | null> | null =
 
 async function doRestoreSession() {
   if (!inflightRestore) {
+    const storedToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("corroly_refresh_token")
+        : null;
+
     inflightRestore = api
-      .post("/auth/refresh")
+      .post("/auth/refresh", { refreshToken: storedToken || undefined })
       .then((res) => {
         if (res.data?.data) {
+          const { user, accessToken, refreshToken } = res.data.data;
+          if (refreshToken && typeof window !== "undefined") {
+            try {
+              localStorage.setItem("corroly_refresh_token", refreshToken);
+            } catch {}
+          }
           return {
-            user: res.data.data.user,
-            accessToken: res.data.data.accessToken,
+            user,
+            accessToken,
+            refreshToken,
           };
         }
         return null;

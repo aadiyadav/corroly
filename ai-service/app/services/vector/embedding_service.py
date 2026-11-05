@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Dict, Any, Optional
 from pydantic import SecretStr
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -8,7 +9,7 @@ from app.services.vector.chroma_client import vector_service
 class EmbeddingService:
     """
     Orchestrates dense vector embedding generation and persistent multi-tenant ChromaDB storage.
-    Supports Google Gemini embeddings (text-embedding-004) with fallback to ChromaDB's built-in vectorization.
+    Supports Google Gemini embeddings (gemini-embedding-2) strictly matching the ChromaDB 3072-dimensional index.
     """
 
     def __init__(self):
@@ -31,7 +32,6 @@ class EmbeddingService:
                 print(f"[EmbeddingService] Query embedding generation failed ({e})")
         return None
 
-
     async def embed_and_upsert_document(
         self,
         user_id: str,
@@ -39,10 +39,11 @@ class EmbeddingService:
         document_id: str,
         document_title: str,
         chunks: List[Dict[str, Any]],
-        batch_size: int = 50
+        batch_size: int = 20
     ) -> int:
         """
         Embeds chunks in batches and persists them into ChromaDB under strict compound tenant isolation.
+        Enforces 3072-dimensional consistency with exponential backoff retry.
         """
         if not chunks:
             return 0
@@ -55,12 +56,20 @@ class EmbeddingService:
             embeddings: Optional[List[List[float]]] = None
 
             if self.gemini_embeddings:
-                try:
-                    embeddings = await self.gemini_embeddings.aembed_documents(texts)
-                except Exception as e:
-                    # Log and fallback to ChromaDB's native onnx embedding
-                    print(f"[EmbeddingService] Gemini embedding failed ({e}), falling back to ChromaDB default.")
-                    embeddings = None
+                for attempt in range(4):
+                    try:
+                        embeddings = await self.gemini_embeddings.aembed_documents(texts)
+                        break
+                    except Exception as e:
+                        if attempt < 3:
+                            wait_time = 2.0 * (attempt + 1)
+                            print(f"[EmbeddingService] Gemini embedding attempt {attempt + 1} failed ({e}). Retrying in {wait_time}s...")
+                            await asyncio.sleep(wait_time)
+                        else:
+                            raise RuntimeError(f"Gemini embedding generation failed after {attempt + 1} attempts: {e}")
+
+            if not embeddings:
+                raise ValueError("Embedding generation returned empty vectors. Cannot upsert without valid Gemini embeddings.")
 
             upserted = vector_service.upsert_document_chunks(
                 user_id=user_id,
@@ -71,6 +80,11 @@ class EmbeddingService:
                 embeddings=embeddings
             )
             total_upserted += upserted
+
+            # Slight delay between batches to respect Gemini rate limits
+            if i + batch_size < len(chunks):
+                await asyncio.sleep(0.5)
+
         return total_upserted
 
 
