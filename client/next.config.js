@@ -3,6 +3,9 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_API_URL: process.env.NEXT_API_URL,
+  },
   images: {
     remotePatterns: [
       {
